@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои рецепты{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Мои рецепты</h1>
+
+{% if user.is_staff or perms.recipes.can_edit_all_recipes %}
+    <a href="{% url 'create_recipe' %}" class="btn btn-success mb-3">➕ Создать новый рецепт</a>
+{% endif %}
+
+{% if not user_recipes %}
+<div class="alert alert-info">
+    {% if user.is_staff or perms.recipes.can_edit_all_recipes %}
+        Вы еще не создали ни одного рецепта. Создайте свой первый рецепт!
+    {% else %}
+        Здесь будут отображаться рецепты, которые вы создадите.
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="row">
+    {% for recipe in user_recipes %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="text-white">Нет фото</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ recipe.title }}</h5>
+                <p class="card-text">{{ recipe.description|truncatewords:20 }}</p>
+                <p><strong>⏱ Время:</strong> {{ recipe.cooking_time }} мин</p>
+                <p><strong>👤 Автор:</strong> {{ recipe.author.username|default:"Неизвестен" }}</p>
+                <a href="{% url 'recipe_detail' recipe.id %}" class="btn btn-primary">Подробнее</a>
+                {% if user.is_staff or perms.recipes.can_edit_all_recipes or recipe.author == user %}
+                    <a href="{% url 'edit_recipe' recipe.id %}" class="btn btn-warning">Редактировать</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

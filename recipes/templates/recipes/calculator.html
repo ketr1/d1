@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Калькулятор калорий{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Калькулятор калорий</h1>
+    <p class="text-muted">Выберите ингредиенты для расчета КБЖУ</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div id="ingredients-container">
+                <div class="input-group mb-2">
+                    <select id="ingredient_0" class="form-select">
+                        <option value="">Выберите ингредиент</option>
+                        {% for ing in ingredients %}
+                        <option value="{{ ing.id }}" data-calories="{{ ing.calories }}" data-protein="{{ ing.protein }}" data-fat="{{ ing.fat }}" data-carbs="{{ ing.carbs }}">{{ ing.name }} ({{ ing.calories }} ккал/100г)</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" id="weight_0" class="form-control" placeholder="Вес в граммах" step="any">
+                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">×</button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" onclick="addIngredient()">+ Добавить ингредиент</button>
+            <button type="button" class="btn btn-primary mb-3" onclick="calculate()">Рассчитать</button>
+        </div>
+        <div class="col-md-6">
+            <div id="result" class="card" style="display:none;">
+                <div class="card-body">
+                    <h5 class="card-title">Результат</h5>
+                    <p id="result_calories">🔥 Калории: 0 ккал</p>
+                    <p id="result_protein">🥩 Белки: 0 г</p>
+                    <p id="result_fat">🧈 Жиры: 0 г</p>
+                    <p id="result_carbs">🍚 Углеводы: 0 г</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let counter = 1;
+
+    function addIngredient() {
+        const container = document.getElementById('ingredients-container');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <select id="ingredient_${counter}" class="form-select">
+                <option value="">Выберите ингредиент</option>
+                {% for ing in ingredients %}
+                <option value="{{ ing.id }}" data-calories="{{ ing.calories }}" data-protein="{{ ing.protein }}" data-fat="{{ ing.fat }}" data-carbs="{{ ing.carbs }}">{{ ing.name }} ({{ ing.calories }} ккал/100г)</option>
+                {% endfor %}
+            </select>
+            <input type="number" id="weight_${counter}" class="form-control" placeholder="Вес в граммах" step="any">
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">×</button>
+        `;
+        container.appendChild(div);
+        counter++;
+    }
+
+    function calculate() {
+        let totalCalories = 0;
+        let totalProtein = 0;
+        let totalFat = 0;
+        let totalCarbs = 0;
+
+        for (let i = 0; i < counter; i++) {
+            const select = document.getElementById(`ingredient_${i}`);
+            const weight = document.getElementById(`weight_${i}`);
+
+            if (select && weight && select.value && weight.value) {
+                const selectedOption = select.options[select.selectedIndex];
+                const caloriesPer100 = parseFloat(selectedOption.dataset.calories);
+                const proteinPer100 = parseFloat(selectedOption.dataset.protein);
+                const fatPer100 = parseFloat(selectedOption.dataset.fat);
+                const carbsPer100 = parseFloat(selectedOption.dataset.carbs);
+                const weightGrams = parseFloat(weight.value);
+
+                totalCalories += (weightGrams / 100) * caloriesPer100;
+                totalProtein += (weightGrams / 100) * proteinPer100;
+                totalFat += (weightGrams / 100) * fatPer100;
+                totalCarbs += (weightGrams / 100) * carbsPer100;
+            }
+        }
+
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result_calories').innerHTML = `🔥 Калории: ${totalCalories.toFixed(1)} ккал`;
+        document.getElementById('result_protein').innerHTML = `🥩 Белки: ${totalProtein.toFixed(1)} г`;
+        document.getElementById('result_fat').innerHTML = `🧈 Жиры: ${totalFat.toFixed(1)} г`;
+        document.getElementById('result_carbs').innerHTML = `🍚 Углеводы: ${totalCarbs.toFixed(1)} г`;
+    }
+</script>
+{% endblock %}

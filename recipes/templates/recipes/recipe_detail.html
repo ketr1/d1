@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ recipe.title }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'recipe_list' %}" class="btn btn-secondary mb-3">← Назад к рецептам</a>
+
+{% if recipe.image %}
+<div class="text-center mb-4">
+    <img src="{{ recipe.image.url }}" class="img-fluid rounded" alt="{{ recipe.title }}" style="max-height: 400px;">
+</div>
+{% endif %}
+
+<h1>{{ recipe.title }}</h1>
+<p>{{ recipe.description }}</p>
+<p><strong>⏱ Время готовки:</strong> {{ recipe.cooking_time }} минут</p>
+<p><strong>🍽 Количество порций:</strong> {{ recipe.servings }}</p>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>КБЖУ на порцию:</h5>
+        <p>🔥 Калории: {{ calories_per_serving|floatformat:0 }} ккал</p>
+        <p>🥩 Белки: {{ protein_per_serving|floatformat:1 }} г</p>
+        <p>🧈 Жиры: {{ fat_per_serving|floatformat:1 }} г</p>
+        <p>🍚 Углеводы: {{ carbs_per_serving|floatformat:1 }} г</p>
+    </div>
+</div>
+
+<h3>📝 Ингредиенты:</h3>
+<ul>
+    {% for ing in recipe.recipeingredient_set.all %}
+    <li>{{ ing.ingredient.name }} - {{ ing.quantity_grams }} г</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'add_to_shopping_list' recipe.id %}" class="btn btn-success">🛒 Добавить в список покупок</a>
+
+{% if user.is_authenticated %}
+    {% if is_favorite %}
+        <a href="{% url 'remove_from_favorites' recipe.id %}" class="btn btn-danger">❤️ В избранном (удалить)</a>
+    {% else %}
+        <a href="{% url 'add_to_favorites' recipe.id %}" class="btn btn-outline-danger">🤍 В избранное</a>
+    {% endif %}
+{% endif %}
+
+{% if recipe.author == user or perms.recipes.can_edit_all_recipes %}
+    <a href="{% url 'edit_recipe' recipe.id %}" class="btn btn-warning">✏️ Редактировать</a>
+
+    <form action="{% url 'delete_recipe' recipe.id %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить рецепт?')">🗑️ Удалить</button>
+    </form>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог рецептов{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Каталог рецептов здорового питания</h1>
+
+{% if not recipes %}
+<div class="alert alert-info">
+    Рецептов не найдено. Попробуйте изменить поисковый запрос.
+</div>
+{% endif %}
+
+<div class="row">
+    {% for recipe in recipes %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="text-white">Нет фото</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ recipe.title }}</h5>
+                <p class="card-text">{{ recipe.description|truncatewords:20 }}</p>
+                <p><strong>⏱ Время готовки:</strong> {{ recipe.cooking_time }} мин</p>
+                <a href="{% url 'recipe_detail' recipe.id %}" class="btn btn-primary">Подробнее</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

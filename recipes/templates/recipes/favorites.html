@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Избранное{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Избранные рецепты</h1>
+
+{% if not favorite_recipes %}
+<div class="alert alert-info">
+    У вас пока нет избранных рецептов. Добавляйте рецепты в избранное!
+</div>
+{% endif %}
+
+<div class="row">
+    {% for fav in favorite_recipes %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if fav.recipe.image %}
+            <img src="{{ fav.recipe.image.url }}" class="card-img-top" alt="{{ fav.recipe.title }}" style="height: 200px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ fav.recipe.title }}</h5>
+                <p class="card-text">{{ fav.recipe.description|truncatewords:20 }}</p>
+                <a href="{% url 'recipe_detail' fav.recipe.id %}" class="btn btn-primary">Подробнее</a>
+                <a href="{% url 'remove_from_favorites' fav.recipe.id %}" class="btn btn-danger">Удалить из избранного</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

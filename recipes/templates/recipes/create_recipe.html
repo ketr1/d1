@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать рецепт{% endblock %}
+
+{% block content %}
+{% if user.is_staff %}
+    <h1 class="mb-4">Создать новый рецепт</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Название</label>
+            <input type="text" name="title" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Описание</label>
+            <textarea name="description" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Время готовки (минуты)</label>
+            <input type="number" name="cooking_time" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Количество порций</label>
+            <input type="number" name="servings" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Фото</label>
+            <input type="file" name="image" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Создать рецепт</button>
+        <a href="{% url 'my_recipes' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+{% else %}
+    <div class="alert alert-danger">
+        У вас нет прав на создание рецептов. Только администраторы могут добавлять рецепты.
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,17 +1,18 @@
-from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-from django.shortcuts import redirect
+SOURCE_DB = BASE_DIR / 'db.sqlite3'
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
+if os.environ.get('VERCEL') == '1':
+    TMP_DB = Path('/tmp/db.sqlite3')
 
+    if SOURCE_DB.exists() and not TMP_DB.exists():
+        shutil.copyfile(SOURCE_DB, TMP_DB)
 
-    path('accounts/profile/', lambda request: redirect('/')),
+    DB_NAME = TMP_DB
+else:
+    DB_NAME = SOURCE_DB
 
-    path('', include('recipes.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
-]
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_NAME,
+    }
+}

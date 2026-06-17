@@ -1,9 +1,13 @@
 import os
+import shutil
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
+
 SECRET_KEY = 'django-insecure-key-change-in-production'
+
 DEBUG = True
+
 ALLOWED_HOSTS = [
     "d1-lyart-ten.vercel.app",
     ".vercel.app",
@@ -36,7 +40,7 @@ ROOT_URLCONF = 'urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -51,29 +55,69 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
+
+# ============================================================
+# SQLite для Vercel
+# ------------------------------------------------------------
+# На Vercel папка проекта /var/task доступна только для чтения.
+# Поэтому db.sqlite3 нельзя использовать напрямую.
+#
+# Решение:
+# 1. Берём готовую базу db.sqlite3 из проекта.
+# 2. Копируем её во временную папку /tmp.
+# 3. Django работает уже с /tmp/db.sqlite3, куда можно писать.
+# ============================================================
+
+SOURCE_DB = BASE_DIR / 'db.sqlite3'
+TMP_DB = Path('/tmp/db.sqlite3')
+
+if SOURCE_DB.exists() and not TMP_DB.exists():
+    shutil.copyfile(SOURCE_DB, TMP_DB)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': TMP_DB,
     }
 }
 
+
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'
+    },
 ]
 
 LANGUAGE_CODE = 'ru-ru'
+
 TIME_ZONE = 'Europe/Moscow'
+
 USE_I18N = True
+
 USE_TZ = True
 
+
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 LOGIN_REDIRECT_URL = '/'
+
 LOGOUT_REDIRECT_URL = '/'

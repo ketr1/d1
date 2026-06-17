@@ -55,19 +55,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
-
-# ============================================================
-# SQLite для Vercel
-# ------------------------------------------------------------
-# На Vercel папка проекта /var/task доступна только для чтения.
-# Поэтому db.sqlite3 нельзя использовать напрямую.
-#
-# Решение:
-# 1. Берём готовую базу db.sqlite3 из проекта.
-# 2. Копируем её во временную папку /tmp.
-# 3. Django работает уже с /tmp/db.sqlite3, куда можно писать.
-# ============================================================
-
 SOURCE_DB = BASE_DIR / 'db.sqlite3'
 TMP_DB = Path('/tmp/db.sqlite3')
 
@@ -111,6 +98,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 

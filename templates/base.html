@@ -137,7 +137,9 @@
                 if (savedImage) {
                     image.src = savedImage;
                     image.style.display = '';
-                    fallbacks.forEach((fallback) => fallback.style.display = 'none');
+                    fallbacks.forEach((fallback) => {
+                        fallback.style.setProperty('display', 'none', 'important');
+                    });
                 }
             });
 

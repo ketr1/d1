@@ -3,8 +3,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth import login, logout
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 import json
@@ -180,63 +180,36 @@ def toggle_shopping_item(request, item_id):
 
 def register(request):
     if request.method == 'POST':
-        username = request.POST.get('username') or request.POST.get('username1') or ''
-        password1 = request.POST.get('password1') or ''
-        password2 = request.POST.get('password2') or ''
+        form = UserCreationForm(request.POST)
 
-        username = username.strip()
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            move_session_shopping_list_to_user(request, user)
+            return redirect('recipe_list')
+    else:
+        form = UserCreationForm()
 
-        if not username:
-            form = UserCreationForm(request.POST)
-            return render(request, 'registration/register.html', {
-                'form': form,
-                'error': 'Введите имя пользователя.'
-            })
-
-        if password1 != password2:
-            form = UserCreationForm(request.POST)
-            return render(request, 'registration/register.html', {
-                'form': form,
-                'error': 'Пароли не совпадают.'
-            })
-
-        request.session['demo_logged_in'] = True
-        request.session['demo_username'] = username
-        request.session.save()
-
-        return redirect('recipe_list')
-
-    form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
 
 def demo_login(request):
     if request.method == 'POST':
-        username = request.POST.get('username') or ''
-        password = request.POST.get('password') or ''
+        form = AuthenticationForm(request, data=request.POST)
 
-        username = username.strip()
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
+            move_session_shopping_list_to_user(request, user)
             return redirect('recipe_list')
+    else:
+        form = AuthenticationForm(request)
 
-        if username:
-            request.session['demo_logged_in'] = True
-            request.session['demo_username'] = username
-            request.session.save()
-            return redirect('recipe_list')
-
-    return render(request, 'registration/login.html')
+    return render(request, 'registration/login.html', {'form': form})
 
 
 def demo_logout(request):
     logout(request)
-    request.session.pop('demo_logged_in', None)
-    request.session.pop('demo_username', None)
-    request.session.save()
     return redirect('recipe_list')
 
 

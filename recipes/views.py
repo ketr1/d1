@@ -7,9 +7,20 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import login, logout
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
+import base64
 import json
 
 from .models import Recipe, Ingredient, RecipeIngredient, ShoppingList, Favorite
+
+
+def get_uploaded_image_data(uploaded_image):
+    if not uploaded_image:
+        return ''
+
+    content_type = uploaded_image.content_type or 'image/jpeg'
+    encoded_image = base64.b64encode(uploaded_image.read()).decode('ascii')
+    uploaded_image.seek(0)
+    return f'data:{content_type};base64,{encoded_image}'
 
 
 def recipe_list(request):
@@ -309,7 +320,7 @@ def create_recipe(request):
         description = request.POST.get('description')
         cooking_time = request.POST.get('cooking_time')
         servings = request.POST.get('servings')
-        image = request.FILES.get('image')
+        image = get_uploaded_image_data(request.FILES.get('image'))
 
         recipe = Recipe.objects.create(
             title=title,
@@ -361,8 +372,9 @@ def edit_recipe(request, pk):
         recipe.cooking_time = request.POST.get('cooking_time')
         recipe.servings = request.POST.get('servings') or 1
 
-        if request.FILES.get('image'):
-            recipe.image = request.FILES.get('image')
+        uploaded_image = request.FILES.get('image')
+        if uploaded_image:
+            recipe.image = get_uploaded_image_data(uploaded_image)
 
         recipe.save()
         return redirect('recipe_detail', pk=recipe.id)

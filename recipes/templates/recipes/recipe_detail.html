@@ -5,9 +5,9 @@
 {% block content %}
 <a href="{% url 'recipe_list' %}" class="btn btn-secondary mb-3">← Назад к рецептам</a>
 
-{% if recipe.image %}
+{% if recipe.image_src %}
 <div class="text-center mb-4">
-    <img src="{{ recipe.image.url }}" class="img-fluid rounded" alt="{{ recipe.title }}" style="max-height: 400px;">
+    <img src="{{ recipe.image_src }}" class="img-fluid rounded" alt="{{ recipe.title }}" style="max-height: 400px;">
 </div>
 {% endif %}
 

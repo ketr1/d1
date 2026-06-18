@@ -24,6 +24,23 @@ class Recipe(models.Model):
     servings = models.IntegerField(default=1)
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='recipes')
 
+    @property
+    def image_src(self):
+        if self.image:
+            if self.image.name.startswith('data:'):
+                return self.image.name
+
+            return self.image.url
+
+        return ''
+
+    @property
+    def image_display_name(self):
+        if self.image and self.image.name.startswith('data:'):
+            return 'Загруженное изображение'
+
+        return self.image.name if self.image else ''
+
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'

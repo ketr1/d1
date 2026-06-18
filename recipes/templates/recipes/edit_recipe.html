@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="mb-4">Редактировать рецепт: {{ recipe.title }}</h1>
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" data-recipe-image-form="{{ recipe.id }}">
     {% csrf_token %}
     <div class="mb-3">
         <label class="form-label">Название</label>

@@ -115,6 +115,103 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageKey = (recipeId) => `healthyFoodRecipeImage:${recipeId}`;
+            const pendingImageKey = 'healthyFoodPendingRecipeImage';
+
+            const currentRecipe = document.querySelector('[data-current-recipe-id]');
+            const pendingImage = localStorage.getItem(pendingImageKey);
+            if (currentRecipe && pendingImage) {
+                localStorage.setItem(imageKey(currentRecipe.dataset.currentRecipeId), pendingImage);
+                localStorage.removeItem(pendingImageKey);
+            }
+
+            document.querySelectorAll('[data-recipe-image-id]').forEach((image) => {
+                const recipeId = image.dataset.recipeImageId;
+                const savedImage = localStorage.getItem(imageKey(recipeId));
+                const fallbacks = document.querySelectorAll(
+                    `[data-recipe-image-fallback-id="${recipeId}"]`
+                );
+
+                if (savedImage) {
+                    image.src = savedImage;
+                    image.style.display = '';
+                    fallbacks.forEach((fallback) => fallback.style.display = 'none');
+                }
+            });
+
+            const resizeImage = (file) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onerror = reject;
+                reader.onload = () => {
+                    const image = new Image();
+
+                    image.onerror = reject;
+                    image.onload = () => {
+                        const maxSize = 1000;
+                        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(image.width * scale));
+                        canvas.height = Math.max(1, Math.round(image.height * scale));
+                        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+
+                    image.src = reader.result;
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            document.querySelectorAll('[data-recipe-image-form]').forEach((form) => {
+                form.addEventListener('submit', async (event) => {
+                    const imageInput = form.querySelector('input[type="file"][name="image"]');
+                    const imageFile = imageInput?.files?.[0];
+
+                    if (!imageFile || form.dataset.imageSubmitting === 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    try {
+                        const savedImage = await resizeImage(imageFile);
+                        localStorage.setItem(imageKey(form.dataset.recipeImageForm), savedImage);
+                        imageInput.value = '';
+                        form.dataset.imageSubmitting = 'true';
+                        form.submit();
+                    } catch (error) {
+                        alert('Не удалось сохранить фотографию в браузере. Попробуйте выбрать файл меньшего размера.');
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-recipe-image-create-form]').forEach((form) => {
+                form.addEventListener('submit', async (event) => {
+                    const imageInput = form.querySelector('input[type="file"][name="image"]');
+                    const imageFile = imageInput?.files?.[0];
+
+                    if (!imageFile || form.dataset.imageSubmitting === 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    try {
+                        const savedImage = await resizeImage(imageFile);
+                        localStorage.setItem(pendingImageKey, savedImage);
+                        imageInput.value = '';
+                        form.dataset.imageSubmitting = 'true';
+                        form.submit();
+                    } catch (error) {
+                        alert('Не удалось сохранить фотографию в браузере. Попробуйте выбрать файл меньшего размера.');
+                    }
+                });
+            });
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

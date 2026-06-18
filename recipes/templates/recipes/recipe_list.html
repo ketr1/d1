@@ -16,9 +16,13 @@
     <div class="col-md-4 mb-4">
         <div class="card h-100">
             {% if recipe.image_src %}
-            <img src="{{ recipe.image_src }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+            <img src="{{ recipe.image_src }}" data-recipe-image-id="{{ recipe.id }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+            <div data-recipe-image-fallback-id="{{ recipe.id }}" class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px; display: none;">
+                <span class="text-white">Нет фото</span>
+            </div>
             {% else %}
-            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+            <img src="" data-recipe-image-id="{{ recipe.id }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover; display: none;">
+            <div data-recipe-image-fallback-id="{{ recipe.id }}" class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
                 <span class="text-white">Нет фото</span>
             </div>
             {% endif %}

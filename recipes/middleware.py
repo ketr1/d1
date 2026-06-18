@@ -23,19 +23,21 @@ class RestoreMissingUserMiddleware:
                 try:
                     user_id = int(user_id)
                     User = get_user_model()
+                    user_data = {
+                        'username': snapshot['username'],
+                        'password': snapshot['password'],
+                        'first_name': snapshot.get('first_name', ''),
+                        'last_name': snapshot.get('last_name', ''),
+                        'email': snapshot.get('email', ''),
+                        'is_staff': bool(snapshot.get('is_staff')),
+                        'is_superuser': bool(snapshot.get('is_superuser')),
+                        'is_active': bool(snapshot.get('is_active', True)),
+                    }
 
-                    if not User.objects.filter(id=user_id).exists():
-                        User.objects.create(
-                            id=user_id,
-                            username=snapshot['username'],
-                            password=snapshot['password'],
-                            first_name=snapshot.get('first_name', ''),
-                            last_name=snapshot.get('last_name', ''),
-                            email=snapshot.get('email', ''),
-                            is_staff=bool(snapshot.get('is_staff')),
-                            is_superuser=bool(snapshot.get('is_superuser')),
-                            is_active=bool(snapshot.get('is_active', True)),
-                        )
+                    User.objects.update_or_create(
+                        id=user_id,
+                        defaults=user_data,
+                    )
                 except (DatabaseError, KeyError, TypeError, ValueError):
                     pass
 

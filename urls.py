@@ -1,18 +1,13 @@
-SOURCE_DB = BASE_DIR / 'db.sqlite3'
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
 
-if os.environ.get('VERCEL') == '1':
-    TMP_DB = Path('/tmp/db.sqlite3')
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('', include('recipes.urls')),
+]
 
-    if SOURCE_DB.exists() and not TMP_DB.exists():
-        shutil.copyfile(SOURCE_DB, TMP_DB)
-
-    DB_NAME = TMP_DB
-else:
-    DB_NAME = SOURCE_DB
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_NAME,
-    }
-}
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

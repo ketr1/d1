@@ -110,7 +110,21 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+SOURCE_MEDIA_ROOT = BASE_DIR / 'media'
+
+if os.environ.get('VERCEL') == '1':
+    MEDIA_ROOT = Path('/tmp/media')
+
+    if SOURCE_MEDIA_ROOT.exists():
+        shutil.copytree(
+            SOURCE_MEDIA_ROOT,
+            MEDIA_ROOT,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns('*.zip'),
+        )
+else:
+    MEDIA_ROOT = SOURCE_MEDIA_ROOT
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
